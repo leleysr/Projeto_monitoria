@@ -4,8 +4,20 @@
 #define TAM_BLOCO 30
 #define DELTA_TIME 0.016
 
+float velocidadeDaBusca = 2;
 int fonte;
+int fonteAletaMiss;
 int timer;
+bool continuarChecando = false;
+int qtdNiveis = 3;
+int indiceNivelAtual = 0;
+int elementoProcurado = 0;
+
+void resetBusca(){
+    indiceNivelAtual = 0;
+    elementoProcurado = 0;
+    continuarChecando = false;
+}
 
 class Bloco{
 public:
@@ -44,6 +56,7 @@ public:
 
 class Nivel{
 public:
+    char * nomeNivel;
     int iniX, iniY;
     vector<Bloco> elementos;
     int minElementos, numElementos;
@@ -75,6 +88,23 @@ public:
         }
     }
 
+    void resetBlocos(){
+        for(int i=0;i<elementos.size();i++){
+            elementos[i].trocaCor({0,0,255,255});
+        }
+        ind = 0;
+        tempo = 0;
+        ReiniciaTimer(timer,true);
+    }
+
+    void escreveAlerta(){
+        EscreverEsquerda("Cache Miss!",iniX+largura+10,iniY+(altura/2)-10,BRANCO,fonteAletaMiss);
+    }
+
+    void escreveNomeNivel(){
+        EscreverEsquerda(nomeNivel,iniX+(largura/2)-100,iniY+(altura/2)-10,BRANCO,fonteAletaMiss);
+    }
+
     void desenharElementos(){
         for(int i=0;i<elementos.size();i++){
             elementos[i].desenhaBloco();
@@ -82,32 +112,38 @@ public:
     }
 
     float tempo,ind =0;
-    bool procuraBloco(bool continuarChecando){
-        if(continuarChecando){
-            if(TempoDecorrido(timer)> DELTA_TIME){
-                if(tempo >0.7){
-                    elementos[ind].cor ={0,0,255,255};
-                    ReiniciaTimer(timer,true);
-                    tempo=0;
-                    ind++;
-                    if(ind == elementos.size()){
-                        ind=0;
-                        return false;
-                    }
+    void procuraBloco(){
+        if(TempoDecorrido(timer)> DELTA_TIME){
+            if(tempo > velocidadeDaBusca){
+                if(elementos[ind].numero == elementoProcurado){
+                    elementos[ind].cor ={0,255,0,255};
+                    continuarChecando =  false;
                 }else{
-                    tempo+=DELTA_TIME;
+                    elementos[ind].cor ={255,0,0,255};
+                }
+                ReiniciaTimer(timer,true);
+                tempo=0;
+                ind++;
+                if(ind == elementos.size()){
+                    ind=0;
+                    indiceNivelAtual++;
+                    if(indiceNivelAtual%qtdNiveis == 0){
+                        continuarChecando = false;
+                    }
+
                 }
             }else{
-                DespausaTimer(timer);
-                tempo = 0;
-                elementos[ind].cor ={255,0,0,255};
+                tempo+=DELTA_TIME;
             }
-            return true;
+        }else{
+            DespausaTimer(timer);
+            tempo = 0;
+            elementos[ind].cor ={255,255,0,255};
         }
-        return false;
     }
 
 };
+
 
 /*typedef struct niveis{
     int iniX, iniY;
