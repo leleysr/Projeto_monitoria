@@ -5,18 +5,14 @@
 #define DELTA_TIME 0.016
 
 float velocidadeDaBusca = 2;
-int fonte;
-int fonteAletaMiss;
-int timer;
-bool continuarChecando = false;
-int qtdNiveis = 3;
-int indiceNivelAtual = 0;
-int elementoProcurado = 0;
+int fonte, fonteAletaMiss, timer, qtdNiveis = 3, indiceNivelAtual = 0, elementoProcurado = 0;
+bool continuarChecando = false, missTodosNiveis = false;
 
 void resetBusca(){
     indiceNivelAtual = 0;
     elementoProcurado = 0;
     continuarChecando = false;
+    missTodosNiveis = false;
 }
 
 class Bloco{
@@ -61,6 +57,7 @@ public:
     vector<Bloco> elementos;
     int minElementos, numElementos;
     int largura,altura;
+    bool miss = false;
     PIG_Cor cor;
 
     Nivel(int posicaoX,int posicaoY,int elementosLinha,int qtdBlocos,int larg=200,int alt=100,PIG_Cor color={0,144,144,255}){
@@ -95,6 +92,7 @@ public:
         ind = 0;
         tempo = 0;
         ReiniciaTimer(timer,true);
+        miss = false;
     }
 
     void escreveAlerta(){
@@ -102,7 +100,7 @@ public:
     }
 
     void escreveNomeNivel(){
-        EscreverEsquerda(nomeNivel,iniX+(largura/2)-100,iniY+(altura/2)-10,BRANCO,fonteAletaMiss);
+        EscreverCentralizada(nomeNivel,iniX+(largura/2),iniY+(altura/2),BRANCO,fonteAletaMiss);
     }
 
     void desenharElementos(){
@@ -127,8 +125,11 @@ public:
                 if(ind == elementos.size()){
                     ind=0;
                     indiceNivelAtual++;
-                    if(indiceNivelAtual%qtdNiveis == 0){
+                    miss = true;
+                    //if(indiceNivelAtual%qtdNiveis == 0){
+                    if(indiceNivelAtual == qtdNiveis){
                         continuarChecando = false;
+                        missTodosNiveis = true;
                     }
 
                 }

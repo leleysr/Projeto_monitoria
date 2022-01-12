@@ -23,18 +23,32 @@ int main( int argc, char* args[] ){
     meuTeclado = GetTeclado();
     char elementoBuscado[20] =  "";
     int tamanhoElementoBuscado = 0;
-    Nivel nivel1 = Nivel(400,400,4,4,200,62);
+    Nivel nivel1 = Nivel(250,400,4,4,200,62);
     nivel1.criarBlocos(4);
 
-    Nivel nivel2 = Nivel(500-192,225,8,16,384,108);
+    Nivel nivel2 = Nivel(350-192,225,8,16,384,108);
     nivel2.criarBlocos(16);
 
-    Nivel nivel3 = Nivel(500-284,20,12,36,568,154);
+    Nivel nivel3 = Nivel(350-284,20,12,36,568,154);
     nivel3.criarBlocos(36);
 
-    Nivel memPrincipal = Nivel(780,200,0,0,200,200);
+    Nivel memPrincipal = Nivel(780,100,0,0,200,400);
+
+    //Niveis troca ocorrencia miss
+    Nivel blocoDeTrocaMiss1 = Nivel(780,280,1,1,40,40);
+    blocoDeTrocaMiss1.criarBlocos(1);
+
+    Nivel blocoDeTrocaMiss2 = Nivel(780,280,1,1,40,40);
+    blocoDeTrocaMiss2.criarBlocos(1);
+
+    Nivel blocoDeTrocaMiss3 = Nivel(780,280,1,1,40,40);
+    blocoDeTrocaMiss3.criarBlocos(1);
+
+    vector<Nivel *> NiveisMiss = {&blocoDeTrocaMiss1,&blocoDeTrocaMiss2,&blocoDeTrocaMiss3};
+    // --------//
 
     vector<Nivel *> Niveis = {&nivel1,&nivel2,&nivel3};
+
     //loop principal do jogo
     while(JogoRodando()){
 
@@ -133,9 +147,39 @@ int main( int argc, char* args[] ){
             }
         }
 
-        for(int i=0;i<indiceNivelAtual%qtdNiveis;i++){
-            Niveis[i]->escreveAlerta();
+        for(int i=0;i<qtdNiveis;i++){
+            if(Niveis[i]->miss){
+                Niveis[i]->escreveAlerta();
+            }
+
+            if(missTodosNiveis){
+
+                if((Niveis[i]->iniY + Niveis[i]->altura/2)-20 < NiveisMiss[i]->iniY){
+                    NiveisMiss[i]->iniY--;
+                    NiveisMiss[i]->elementos[0].iniY--;
+                }else if((Niveis[i]->iniY + Niveis[i]->altura/2)-20 > NiveisMiss[i]->iniY){
+                    NiveisMiss[i]->iniY++;
+                    NiveisMiss[i]->elementos[0].iniY++;
+                }else if((Niveis[i]->iniX + Niveis[i]->largura)+8 < NiveisMiss[i]->iniX){
+                    NiveisMiss[i]->iniX--;
+                    NiveisMiss[i]->elementos[0].iniX--;
+                }
+
+                NiveisMiss[i]->desenhaNivel();
+                NiveisMiss[i]->elementos[0].numero = atoi(elementoBuscado);
+                NiveisMiss[i]->desenharElementos();
+            }
         }
+
+        /*if(missTodosNiveis){
+            if(){
+                blocoDeTrocaMiss.iniX--;
+                blocoDeTrocaMiss.elementos[0].iniX--;
+            }
+            blocoDeTrocaMiss.desenhaNivel();
+            blocoDeTrocaMiss.elementos[0].numero = atoi(elementoBuscado);
+            blocoDeTrocaMiss.desenharElementos();
+        }*/
 
         //todas as chamadas de desenho devem ser feitas aqui na ordem desejada
         //o frame totalmente pronto será mostrado na tela
