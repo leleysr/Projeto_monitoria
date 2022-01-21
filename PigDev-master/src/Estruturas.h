@@ -42,14 +42,6 @@ public:
     }
 };
 
-/*typedef struct bloco{
-    int numero;
-    int iniX, iniY;
-    int tamanho;
-    PIG_Cor cor;
-
-}Bloco;*/
-
 class Nivel{
 public:
     char * nomeNivel;
@@ -80,7 +72,7 @@ public:
             int espacos = (largura - (TAM_BLOCO*minElementos))/(minElementos+1);
 
             ////////////////////////ALTERAR O VALOR DO BLOCO
-            Bloco auxBloco = Bloco(i*7, iniX + (espacos*((i%minElementos)+1)) + (TAM_BLOCO*(i%minElementos)),(iniY+altura) - (espacos*((i/minElementos)+1)) - (TAM_BLOCO*((i/minElementos)+1)),TAM_BLOCO);
+            Bloco auxBloco = Bloco(rand()%999, iniX + (espacos*((i%minElementos)+1)) + (TAM_BLOCO*(i%minElementos)),(iniY+altura) - (espacos*((i/minElementos)+1)) - (TAM_BLOCO*((i/minElementos)+1)),TAM_BLOCO);
             elementos.push_back(auxBloco);
         }
     }
@@ -144,14 +136,5 @@ public:
     }
 
 };
-
-
-/*typedef struct niveis{
-    int iniX, iniY;
-    vector<Bloco> elementos;
-    int minElementos, numElementos;
-}Nivel;*/
-
-
 
 #endif // ESTRUTURAS_H_INCLUDED

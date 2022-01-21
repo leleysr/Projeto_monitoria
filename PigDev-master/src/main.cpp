@@ -8,7 +8,6 @@
 PIG_Evento evento;          //evento ser tratadoi a cada pssada do loop principal
 PIG_Teclado meuTeclado;     //variável como mapeamento do teclado
 
-
 int main( int argc, char* args[] ){
 
     //criando o jogo (aplicação)
@@ -20,6 +19,9 @@ int main( int argc, char* args[] ){
 
 
     //associando o teclado (basta uma única vez) com a variável meuTeclado
+    srand(time(NULL));
+    bool terminou = false;
+    int temporizador = CriaTimer(true);
     meuTeclado = GetTeclado();
     char elementoBuscado[20] =  "";
     int tamanhoElementoBuscado = 0;
@@ -35,20 +37,22 @@ int main( int argc, char* args[] ){
     Nivel memPrincipal = Nivel(780,100,0,0,200,400);
 
     //Niveis troca ocorrencia miss
-    Nivel blocoDeTrocaMiss1 = Nivel(780,280,1,1,40,40);
+    Nivel blocoDeTrocaMiss = Nivel(780,280,1,1,40,40);
+    blocoDeTrocaMiss.criarBlocos(1);
+    /*Nivel blocoDeTrocaMiss1 = Nivel(780,280,1,1,40,40);
     blocoDeTrocaMiss1.criarBlocos(1);
 
     Nivel blocoDeTrocaMiss2 = Nivel(780,280,1,1,40,40);
     blocoDeTrocaMiss2.criarBlocos(1);
 
     Nivel blocoDeTrocaMiss3 = Nivel(780,280,1,1,40,40);
-    blocoDeTrocaMiss3.criarBlocos(1);
+    blocoDeTrocaMiss3.criarBlocos(1);*/
 
-    vector<Nivel *> NiveisMiss = {&blocoDeTrocaMiss1,&blocoDeTrocaMiss2,&blocoDeTrocaMiss3};
+    /*vector<Nivel *> NiveisMiss = {&blocoDeTrocaMiss1,&blocoDeTrocaMiss2,&blocoDeTrocaMiss3};*/
     // --------//
 
     vector<Nivel *> Niveis = {&nivel1,&nivel2,&nivel3};
-
+    int indiceNivelAtt = Niveis.size()-1;
     //loop principal do jogo
     while(JogoRodando()){
 
@@ -116,7 +120,8 @@ int main( int argc, char* args[] ){
             }
         }
 
-        EscreveInteiroCentralizado(atoi(elementoBuscado),100,500);
+        EscreverEsquerda("Valor Buscado:",15,500);
+        EscreveInteiroEsquerda(atoi(elementoBuscado),280,500);
 
         // Reset busca
         if( meuTeclado[PIG_TECLA_ESC]){
@@ -126,6 +131,13 @@ int main( int argc, char* args[] ){
             nivel1.resetBlocos();
             nivel2.resetBlocos();
             nivel3.resetBlocos();
+            indiceNivelAtt = Niveis.size()-1;
+            terminou = false;
+            ReiniciaTimer(temporizador,true);
+            blocoDeTrocaMiss.iniX = 780;
+            blocoDeTrocaMiss.elementos[0].iniX = 785;
+            blocoDeTrocaMiss.iniY = 280;
+            blocoDeTrocaMiss.elementos[0].iniY = 285;
         }
 
         if(meuTeclado[PIG_TECLA_ENTER]){
@@ -152,35 +164,51 @@ int main( int argc, char* args[] ){
                 Niveis[i]->escreveAlerta();
             }
 
-            if(missTodosNiveis){
-
-                if((Niveis[i]->iniY + Niveis[i]->altura/2)-20 < NiveisMiss[i]->iniY){
-                    NiveisMiss[i]->iniY--;
-                    NiveisMiss[i]->elementos[0].iniY--;
-                }else if((Niveis[i]->iniY + Niveis[i]->altura/2)-20 > NiveisMiss[i]->iniY){
-                    NiveisMiss[i]->iniY++;
-                    NiveisMiss[i]->elementos[0].iniY++;
-                }else if((Niveis[i]->iniX + Niveis[i]->largura)+8 < NiveisMiss[i]->iniX){
-                    NiveisMiss[i]->iniX--;
-                    NiveisMiss[i]->elementos[0].iniX--;
+            if(missTodosNiveis && !terminou){
+                Niveis[indiceNivelAtt]->miss = false;
+                if((Niveis[indiceNivelAtt]->iniY + Niveis[indiceNivelAtt]->altura/2)-20 < blocoDeTrocaMiss.iniY){
+                    blocoDeTrocaMiss.iniY--;
+                    blocoDeTrocaMiss.elementos[0].iniY--;
+                }else if((Niveis[indiceNivelAtt]->iniY + Niveis[indiceNivelAtt]->altura/2)-20 > blocoDeTrocaMiss.iniY){
+                    blocoDeTrocaMiss.iniY++;
+                    blocoDeTrocaMiss.elementos[0].iniY++;
+                }else if((Niveis[indiceNivelAtt]->iniX + Niveis[indiceNivelAtt]->largura)+8 < blocoDeTrocaMiss.iniX){
+                    blocoDeTrocaMiss.iniX--;
+                    blocoDeTrocaMiss.elementos[0].iniX--;
+                }else{
+                    int indiceAux = rand()%Niveis[indiceNivelAtt]->numElementos;
+                    Niveis[indiceNivelAtt]->elementos[indiceAux].numero = elementoProcurado;
+                    Niveis[indiceNivelAtt]->elementos[indiceAux].cor = LARANJA;
+                    indiceNivelAtt--;
+                    if(indiceNivelAtt < 0){
+                        //reset a aplicacao
+                        terminou = true;
+                        DespausaTimer(temporizador);
+                    }
                 }
 
-                NiveisMiss[i]->desenhaNivel();
-                NiveisMiss[i]->elementos[0].numero = atoi(elementoBuscado);
-                NiveisMiss[i]->desenharElementos();
+                blocoDeTrocaMiss.desenhaNivel();
+                blocoDeTrocaMiss.elementos[0].numero = atoi(elementoBuscado);
+                blocoDeTrocaMiss.desenharElementos();
+            }
+            if(terminou){
+                if(TempoDecorrido(temporizador) > 15.0){
+                    resetBusca();
+                    memset(elementoBuscado, ' ', 20);
+                    tamanhoElementoBuscado = 0;
+                    nivel1.resetBlocos();
+                    nivel2.resetBlocos();
+                    nivel3.resetBlocos();
+                    blocoDeTrocaMiss.iniX = 780;
+                    blocoDeTrocaMiss.elementos[0].iniX = 785;
+                    blocoDeTrocaMiss.iniY = 280;
+                    blocoDeTrocaMiss.elementos[0].iniY = 285;
+                    indiceNivelAtt = Niveis.size()-1;
+                    ReiniciaTimer(temporizador,true);
+                    terminou = false;
+                }
             }
         }
-
-        /*if(missTodosNiveis){
-            if(){
-                blocoDeTrocaMiss.iniX--;
-                blocoDeTrocaMiss.elementos[0].iniX--;
-            }
-            blocoDeTrocaMiss.desenhaNivel();
-            blocoDeTrocaMiss.elementos[0].numero = atoi(elementoBuscado);
-            blocoDeTrocaMiss.desenharElementos();
-        }*/
-
         //todas as chamadas de desenho devem ser feitas aqui na ordem desejada
         //o frame totalmente pronto será mostrado na tela
         EncerraDesenho();
